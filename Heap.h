@@ -36,12 +36,13 @@ public:
             return parent <= child;
         }
     }
-    void check(int parentIndex, int childIndex){
+    void siftUp(int childIndex){
+        int parentIndex = this->parentIndex(childIndex);
         if(0 <= parentIndex) {
             int parent = vec[parentIndex], child = vec[childIndex];
             if (!onTop(parent, child)) {
                 swap(vec[parentIndex], vec[childIndex]);
-                check(this->parentIndex(parentIndex), parentIndex);
+                siftUp(parentIndex);
             }
         }
     }
@@ -51,9 +52,8 @@ public:
     }
     void insert(int value){
         vec.push_back(value);
-        int childIndex = size()-1, parentIndex = this->parentIndex(childIndex);
-        check(parentIndex, childIndex);
-        print();
+        int childIndex = size()-1;
+        siftUp(childIndex);
     }
 
     int peek(){
@@ -62,46 +62,32 @@ public:
         }
         return vec[0];
     }
-    void grew_child(int parentIndex){
+    void sift_down(int parentIndex = 0){
         int leftChildIndex = this->leftChildIndex(parentIndex), rightChildIndex = this->rightChildIndex(parentIndex);
+        int topChildIndex = -1;
         if(leftChildIndex < size()){
             int leftChild = vec[leftChildIndex];
             if(rightChildIndex < size()){
                 int rightChild = vec[rightChildIndex];
-                if(onTop(leftChild, rightChild)){
-                    vec[parentIndex] = leftChild;
-                    grew_child(leftChildIndex);
-                }
-                else{
-                    vec[parentIndex] = rightChild;
-                    grew_child(rightChildIndex);
-                }
+                topChildIndex = onTop(leftChild, rightChild)? leftChildIndex: rightChildIndex;
             }
             else{
-                vec[parentIndex] = leftChild;
-                vec.pop_back();
+                topChildIndex = leftChildIndex;
             }
         }
-        else{
-            vec.pop_back();
+        if(0 < topChildIndex && !onTop(vec[parentIndex], vec[topChildIndex])){
+            swap(vec[parentIndex], vec[topChildIndex]);
+            sift_down(topChildIndex);
         }
     }
     int pop(){
-
         if(isEmpty()){
             throw std::out_of_range ("Empty heap");
         }
         int res = vec[0];
-        grew_child(0);
-        print();
+        vec[0] = vec[size()-1];
+        vec.pop_back();
+        sift_down();
         return res;
     }
-    void print(){
-        cout<<"[";
-        for(int i = 0; i < size()-1; i++){
-            cout<<vec[i]<<", ";
-        }
-        cout<<vec[size()-1]<<"]\n";
-    }
-
 };
